@@ -1,0 +1,12 @@
+{
+    "name": "cotizador-seguros",
+    "version": "1.0.0",
+    "description": "Formulario para cotizar seguros de salud",
+    "main": "index.html",
+    "scripts": {
+        "start": "python3 -m http.server 8080"
+    },
+    "engines": {
+        "node": ">=14"
+    }
+}
