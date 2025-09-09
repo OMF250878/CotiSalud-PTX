@@ -1,12 +1,17 @@
 {
-    "name": "cotizador-seguros",
-    "version": "1.0.0",
-    "description": "Formulario para cotizar seguros de salud",
-    "main": "index.html",
-    "scripts": {
-        "start": "python3 -m http.server 8080"
-    },
-    "engines": {
-        "node": ">=14"
-    }
+  "name": "cotisalud-ptx",
+  "version": "1.0.0",
+  "description": "Cotizador de salud PTX desplegado en Railway",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "author": "Omar",
+  "license": "MIT"
 }
