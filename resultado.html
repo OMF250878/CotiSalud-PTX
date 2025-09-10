@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Resultados de Cotización — Protexa</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header site-header--compact">
+    <img src="protexa-logo.png" alt="Protexa" class="brand__logo--sm" />
+  </header>
+
+  <main class="results-container">
+    <div class="results-actions">
+      <button class="btn btn--back" onclick="history.back()">Volver</button>
+      <button class="btn btn--print" onclick="window.print()">Imprimir</button>
+    </div>
+    <div id="results" class="results-grid" aria-live="polite"></div>
+  </main>
+
+  <script>
+    (function () {
+      const RAW = sessionStorage.getItem('cotisalud_resultados');
+      const container = document.getElementById('results');
+
+      if (!RAW) {
+        container.innerHTML = '<p>No se encontraron resultados. Vuelve al formulario y realiza una cotización.</p>';
+        return;
+      }
+
+      /** @type {Array<{aseguradora:string,plan:string,total_anual:number,total_mensual:number,prima_por_asegurado:Array<{edad:number,prima:number}>}>} */
+      const results = JSON.parse(RAW);
+
+      // 1) Agrupar por aseguradora
+      const grupos = results.reduce((acc, item) => {
+        (acc[item.aseguradora] ||= []).push(item);
+        return acc;
+      }, {});
+
+      // 2) Ordenar por total_anual (desc)
+      const SORT_KEY = 'total_anual';
+      const fmtMoney = (n) => (typeof n === 'number' ? n : Number(n))
+        .toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      // 3) Render
+      container.innerHTML = '';
+      Object.entries(grupos).forEach(([aseguradora, planes]) => {
+        planes.sort((a, b) => (b[SORT_KEY] ?? 0) - (a[SORT_KEY] ?? 0));
+
+        const col = document.createElement('section');
+        col.className = 'insurer-col';
+        col.innerHTML = `<h2>${aseguradora}</h2>`;
+
+        planes.forEach(p => {
+          const card = document.createElement('article');
+          card.className = 'plan-card';
+          card.innerHTML = `
+            <h3>${p.plan}</h3>
+            <div class="badges">
+              <span class="badge">S/ ${fmtMoney(p.total_mensual)} / mes</span>
+              <span class="badge badge--accent">S/ ${fmtMoney(p.total_anual)} / año</span>
+            </div>
+            <div>
+              <strong>Primas por asegurado</strong>
+              <ul class="prima-list">
+                ${Array.isArray(p.prima_por_asegurado)
+                  ? p.prima_por_asegurado.map(r => `<li>Edad ${r.edad}: S/ ${fmtMoney(r.prima)}</li>`).join('')
+                  : '<li>-</li>'}
+              </ul>
+            </div>
+          `;
+          col.appendChild(card);
+        });
+
+        container.appendChild(col);
+      });
+    })();
+  </script>
+</body>
+</html>

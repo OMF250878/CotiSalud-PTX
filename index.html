@@ -1,134 +1,111 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cotizador de Seguros de Salud</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cotizador de Seguros de Salud</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <header class="site-header">
-  <div class="brand">
-    <img src="protexa-logo.png" alt="Protexa" class="brand__logo" />
-    <h1 class="brand__title">Cotizador de Salud</h1>
-  </div>
-</header>
+  <!-- Header minimalista -->
+  <header class="site-header site-header--compact">
+    <img src="protexa-logo.png" alt="Protexa" class="brand__logo--sm" />
+  </header>
 
-    <div class="container">
-        <h1>Cotizador de Seguros de Salud</h1>
-        
-        <form id="cotizadorForm">
-            <!-- Datos del solicitante -->
-            <div class="section">
-                <h2>Datos del Solicitante</h2>
-                
-                <div class="form-group">
-                    <label for="nombre">Nombre *</label>
-                    <input type="text" id="nombre" name="nombre" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="apellidos">Apellidos *</label>
-                    <input type="text" id="apellidos" name="apellidos" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="email">Correo Electrónico *</label>
-                    <input type="email" id="email" name="email" required>
-                </div>
+  <main class="container">
+    <h1 class="page-title">Cotizador de Seguros de Salud</h1>
+
+    <form id="cotizadorForm" class="form">
+      <!-- Datos del Solicitante -->
+      <section class="section">
+        <h2 class="section__title">Datos del Solicitante</h2>
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="nombre">Nombre *</label>
+            <input id="nombre" name="nombre" type="text" required />
+          </div>
+          <div class="form-group">
+            <label for="apellidos">Apellidos *</label>
+            <input id="apellidos" name="apellidos" type="text" required />
+          </div>
+          <div class="form-group">
+            <label for="email">Correo Electrónico *</label>
+            <input id="email" name="email" type="email" required />
+          </div>
+        </div>
+      </section>
+
+      <!-- Preferencias de cotización -->
+      <section class="section">
+        <h2 class="section__title">Preferencias</h2>
+
+        <div class="grid-3">
+          <div class="form-group">
+            <label>Continuidad *</label>
+            <div class="radio-group">
+              <label class="radio-label"><input type="radio" name="continuidad" value="si" required /><span>Sí</span></label>
+              <label class="radio-label"><input type="radio" name="continuidad" value="no" required /><span>No</span></label>
             </div>
+          </div>
 
-            <!-- Configuración del seguro -->
-            <div class="section">
-                <h2>Configuración del Seguro</h2>
-                
-                <div class="form-group">
-                    <label>Cobertura *</label>
-                    <div class="radio-group">
-                        <label class="radio-label">
-                            <input type="radio" name="cobertura" value="false" required>
-                            <span>Nacional</span>
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="cobertura" value="true" required>
-                            <span>Internacional</span>
-                        </label>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>Continuidad *</label>
-                    <div class="radio-group">
-                        <label class="radio-label">
-                            <input type="radio" name="continuidad" value="SI" required>
-                            <span>Sí</span>
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="continuidad" value="NO" required>
-                            <span>No</span>
-                        </label>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="aseguradora">Aseguradora *</label>
-                    <select id="aseguradora" name="aseguradora" required>
-                        <option value="">Selecciona una opción</option>
-                        <option value="TODAS">Todas las aseguradoras</option>
-                        <option value="PACIFICO">Pacífico</option>
-                        <option value="SANITAS">Sanitas</option>
-                        <option value="MAPFRE">Mapfre</option>
-                        <option value="RIMAC">Rimac</option>
-                    </select>
-                </div>
+          <div class="form-group">
+            <label>Cobertura *</label>
+            <div class="radio-group">
+              <label class="radio-label"><input type="radio" name="cobertura" value="false" required /><span>Nacional</span></label>
+              <label class="radio-label"><input type="radio" name="cobertura" value="true" required /><span>Internacional</span></label>
             </div>
+          </div>
 
-            <!-- Asegurados -->
-            <div class="section">
-                <h2>Asegurados</h2>
-                
-                <!-- Titular -->
-                <div class="asegurado-card">
-                    <h3>Titular</h3>
-                    <div class="asegurado-fields">
-                        <div class="form-group">
-                            <label for="titular-edad">Edad *</label>
-                            <input type="number" id="titular-edad" min="0" max="99" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Sexo *</label>
-                            <div class="radio-group">
-                                <label class="radio-label">
-                                    <input type="radio" name="titular-sexo" value="HOMBRE" required>
-                                    <span>Hombre</span>
-                                </label>
-                                <label class="radio-label">
-                                    <input type="radio" name="titular-sexo" value="MUJER" required>
-                                    <span>Mujer</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+          <div class="form-group">
+            <label for="aseguradora">Aseguradora</label>
+            <select id="aseguradora" name="aseguradora">
+              <option value="TODAS">Todas</option>
+              <option value="RIMAC">RIMAC</option>
+              <option value="PACIFICO">PACIFICO</option>
+              <option value="SANITAS">SANITAS</option>
+              <option value="MAPFRE">MAPFRE</option>
+            </select>
+          </div>
+        </div>
+      </section>
 
-                <!-- Botones para agregar -->
-                <div class="add-buttons">
-                    <button type="button" id="addConyuge" class="btn-secondary">+ Agregar Cónyuge</button>
-                    <button type="button" id="addHijo" class="btn-secondary">+ Agregar Hijo</button>
-                </div>
+      <!-- Grupo familiar -->
+      <section class="section">
+        <h2 class="section__title">Grupo Familiar</h2>
 
-                <!-- Container para cónyuge e hijos -->
-                <div id="conyugeContainer"></div>
-                <div id="hijosContainer"></div>
+        <!-- Titular -->
+        <div class="card">
+          <h3 class="card__title">Titular</h3>
+          <div class="grid-3">
+            <div class="form-group">
+              <label for="titular-edad">Edad *</label>
+              <input id="titular-edad" name="titular-edad" type="number" min="0" max="100" required />
             </div>
+            <div class="form-group">
+              <label>Sexo *</label>
+              <div class="radio-group">
+                <label class="radio-label"><input type="radio" name="titular-sexo" value="HOMBRE" required /><span>Hombre</span></label>
+                <label class="radio-label"><input type="radio" name="titular-sexo" value="MUJER" required /><span>Mujer</span></label>
+              </div>
+            </div>
+          </div>
+        </div>
 
-            <button type="submit" id="submitBtn" class="btn-primary">Cotizar Seguro</button>
-        </form>
-        
-        <div id="status" class="status hidden"></div>
-    </div>
-    
-    <script src="script.js"></script>
+        <!-- Contenedores dinámicos -->
+        <div class="add-buttons">
+          <button type="button" id="addConyuge" class="btn-secondary">+ Agregar Cónyuge</button>
+          <button type="button" id="addHijo" class="btn-secondary">+ Agregar Hijo</button>
+        </div>
+
+        <div id="conyugeContainer"></div>
+        <div id="hijosContainer"></div>
+      </section>
+
+      <button type="submit" id="submitBtn" class="btn-primary">Cotizar Seguro</button>
+      <div id="status" class="status hidden"></div>
+    </form>
+  </main>
+
+  <script src="script.js"></script>
 </body>
-
 </html>
