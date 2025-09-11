@@ -142,17 +142,17 @@ document.addEventListener('DOMContentLoaded', () => {
       perfil: "TITULAR",
     });
 
-    // Cónyuge
+    // Cónyuge (perfil: TITULAR)
     const cEdad = document.querySelector('input[name="conyuge-edad"]');
     if (cEdad && cEdad.value) {
       asegurados.push({
         edad: parseInt(cEdad.value, 10),
         sexo: document.querySelector('input[name="conyuge-sexo"]:checked').value,
-        perfil: "DEPENDIENTE",
+        perfil: "TITULAR", // ← ajuste solicitado
       });
     }
 
-    // Hijos
+    // Hijos (perfil: DEPENDIENTE)
     const hijosEdades = document.querySelectorAll('input[name^="hijo-edad-"]');
     hijosEdades.forEach(input => {
       const idx = input.name.split('-')[2];
