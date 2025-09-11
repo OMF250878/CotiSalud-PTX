@@ -1,5 +1,4 @@
 const express = require("express");
-const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -8,13 +7,13 @@ const UPSTREAM = process.env.UPSTREAM_WEBHOOK; // opcional (proxy)
 // Body parser
 app.use(express.json({ limit: "1mb" }));
 
-// Servir estáticos desde la raíz (index.html, css, js, imágenes)
-app.use(express.static(__dirname, { extensions: ["html"] }));
+// Servir estáticos desde la raíz
+app.use(express.static(__dirname));
 
 // Healthcheck
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
-// Proxy opcional para evitar CORS en el front: POST /api/cotizar -> UPSTREAM_WEBHOOK
+// Proxy opcional para evitar CORS: POST /api/cotizar -> UPSTREAM_WEBHOOK
 app.post("/api/cotizar", async (req, res) => {
   if (!UPSTREAM) return res.status(500).json({ error: "UPSTREAM_WEBHOOK no está configurada" });
   try {
