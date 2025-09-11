@@ -5,8 +5,7 @@ const USE_PROXY = true;
 const WEBHOOK_URL = 'https://primary-production-e1c81.up.railway.app/webhook/ce2177d6-7da8-44b6-9781-107ad6844bf1';
 
 // Estado dinámico
-let hijoCounter = 0;
-let conyugeAdded = false;
+let hijoCounter = 0; // solo para numerar las tarjetas de hijos
 
 // Utilidad: UUID simple
 function generateUUID() {
@@ -16,7 +15,6 @@ function generateUUID() {
   });
 }
 
-// ====== DOM Ready ======
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('cotizadorForm');
   const submitBtn = document.getElementById('submitBtn');
@@ -27,10 +25,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const conyugeContainer = document.getElementById('conyugeContainer');
   const hijosContainer = document.getElementById('hijosContainer');
 
-  // Crear tarjeta Cónyuge
+  // === Builders ===
   function createConyugeCard() {
     const wrapper = document.createElement('div');
     wrapper.className = 'card';
+    wrapper.id = 'conyugeCard'; // id único para detectar existencia
     wrapper.innerHTML = `
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
         <h3 class="card__title">Cónyuge</h3>
@@ -39,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="grid-3">
         <div class="form-group">
           <label>Edad *</label>
-          <input type="number" name="conyuge-edad" min="0" max="100" required />
+          <input type="number" name="conyuge-edad" min="18" max="100" required />
         </div>
         <div class="form-group">
           <label>Sexo *</label>
@@ -53,7 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return wrapper;
   }
 
-  // Crear tarjeta Hijo
   function createHijoCard(id) {
     const wrapper = document.createElement('div');
     wrapper.className = 'card';
@@ -65,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="grid-3">
         <div class="form-group">
           <label>Edad *</label>
-          <input type="number" name="hijo-edad-${id}" min="0" max="100" required />
+          <input type="number" name="hijo-edad-${id}" min="0" max="25" required />
         </div>
         <div class="form-group">
           <label>Sexo *</label>
@@ -79,14 +77,15 @@ document.addEventListener('DOMContentLoaded', () => {
     return wrapper;
   }
 
-  // Eventos para agregar
+  // === Helpers ===
+  const hasConyuge = () => !!document.getElementById('conyugeCard');
+
+  // === Eventos de agregar ===
   addConyugeBtn.addEventListener('click', () => {
-    if (!conyugeAdded) {
-      conyugeContainer.appendChild(createConyugeCard());
-      conyugeAdded = true;
-      addConyugeBtn.disabled = true;
-      addConyugeBtn.textContent = '✓ Cónyuge agregado';
-    }
+    if (hasConyuge()) return;
+    conyugeContainer.appendChild(createConyugeCard());
+    addConyugeBtn.disabled = true;
+    addConyugeBtn.textContent = '✓ Cónyuge agregado';
   });
 
   addHijoBtn.addEventListener('click', () => {
@@ -94,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
     hijosContainer.appendChild(createHijoCard(hijoCounter));
   });
 
-  // Validación mínima
+  // === Validaciones ===
   function validateForm() {
     const titularEdad = document.getElementById('titular-edad').value;
     const titularSexo = document.querySelector('input[name="titular-sexo"]:checked');
@@ -103,13 +102,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const email = document.getElementById('email').value.trim();
 
     if (!titularEdad || !titularSexo || !nombre || !apellidos || !email) {
-      showStatus('Completa los campos requeridos (*)', 'error');
+      alert('Completa los campos requeridos (*)');
       return false;
     }
+
+    // Cónyuge: edad mínima 18
+    const cEdadInput = document.querySelector('input[name="conyuge-edad"]');
+    if (cEdadInput && cEdadInput.value !== '') {
+      const cAge = parseInt(cEdadInput.value, 10);
+      if (Number.isNaN(cAge) || cAge < 18) {
+        alert('La edad mínima del cónyuge es de 18 años.');
+        return false;
+      }
+    }
+
+    // Hijos: edad 0 a 25
+    const hijosEdades = document.querySelectorAll('input[name^="hijo-edad-"]');
+    for (const input of hijosEdades) {
+      if (input.value !== '') {
+        const age = parseInt(input.value, 10);
+        if (Number.isNaN(age) || age < 0 || age > 25) {
+          alert('La edad de los hijos debe estar entre 0 y 25 años.');
+          return false;
+        }
+      }
+    }
+
     return true;
   }
 
-  // Construir payload
+  // === Construir payload ===
   function collectFormData() {
     const asegurados = [];
 
@@ -144,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
       id: generateUUID(),
       continuidad: document.querySelector('input[name="continuidad"]:checked').value,
       internacional: document.querySelector('input[name="cobertura"]:checked').value === "true",
-      aseguradora: document.getElementById('aseguradora').value, // puede ser "TODAS"
+      aseguradora: document.getElementById('aseguradora').value, // "TODAS" posible
       nombre: document.getElementById('nombre').value.toUpperCase(),
       apellidos: document.getElementById('apellidos').value.toUpperCase(),
       email: document.getElementById('email').value.toLowerCase(),
@@ -152,14 +174,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // Estado UI
+  // === Estado UI ===
   function showStatus(message, type) {
     status.textContent = message;
     status.className = `status ${type}`;
     status.classList.remove('hidden');
   }
 
-  // Enviar a API (proxy si está activo; si falla, intenta directo)
+  // === Envío (proxy si está activo; si falla, intenta directo) ===
   async function sendPayload(payload) {
     const urls = [];
     if (USE_PROXY) urls.push('/api/cotizar');
@@ -181,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
     throw lastErr || new Error('No se pudo enviar');
   }
 
-  // Submit
+  // === Submit ===
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -193,8 +215,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const data = await sendPayload(payload);
-      // Guardar resultados y redirigir a la página de resultados
-      sessionStorage.setItem('cotisalud_resultados', JSON.stringify(data));
+
+      // Guardar META + resultados y redirigir
+      const meta = {
+        nombre: payload.nombre,
+        apellidos: payload.apellidos,
+        email: payload.email,
+        fecha: new Date().toISOString(),
+        broker: 'Protexa Corredores de Seguros SAC'
+      };
+
+      sessionStorage.setItem('cotisalud_resultados', JSON.stringify({ meta, data }));
       window.location.href = 'resultado.html';
     } catch (err) {
       console.error(err);
@@ -206,13 +237,12 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// Funciones globales para eliminar tarjetas
+// === Funciones globales para eliminar tarjetas ===
 function removeConyuge(btn){
-  btn.closest('.card').remove();
+  const card = btn.closest('.card');
+  if (card) card.remove();
   const addBtn = document.getElementById('addConyuge');
   addBtn.disabled = false;
   addBtn.textContent = '+ Agregar Cónyuge';
-  // reset flag
-  window.conyugeAdded = false;
 }
 function removeHijo(btn){ btn.closest('.card').remove(); }
