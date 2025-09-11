@@ -68,7 +68,7 @@ input:focus, select:focus{ border-color: var(--ptx-orange); box-shadow: 0 0 0 3p
 .status.error{ background:#fdecec; color:#b42318; border:1px solid #f7b9b9; }
 .hidden{ display:none; }
 
-/* ===== Estilos de la página de resultados ===== */
+/* ===== Resultados ===== */
 .results-container{ max-width:1200px; margin:0 auto; padding: 12px 16px 32px; }
 .results-actions{ display:flex; justify-content:flex-end; gap:8px; margin:12px 0 16px; }
 .btn{ border:none; border-radius:10px; padding:8px 12px; cursor:pointer; }
@@ -85,7 +85,44 @@ input:focus, select:focus{ border-color: var(--ptx-orange); box-shadow: 0 0 0 3p
 .badge--accent{ background:#f83b1d; }
 .prima-list{ margin:6px 0 0; padding-left:16px; font-size:.95rem; }
 
+/* ===== META contratante ===== */
+.quote-meta{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px;
+  margin: 6px 0 14px;
+}
+.meta-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap:8px;
+}
+.meta-label{
+  font-weight:600;
+  color:#555;
+  margin-right:4px;
+}
+
+/* ===== Disclaimer ===== */
+.disclaimer{
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+  color:#444;
+}
+.disclaimer h3{
+  font-size:1rem;
+  margin-bottom:8px;
+}
+.disclaimer ul{
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+}
+
 @media print{
   .results-actions, .site-header{ display:none !important; }
   .insurer-col{ break-inside: avoid; }
+  .disclaimer{ font-size: 12px; }
 }
