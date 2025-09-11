@@ -12,25 +12,73 @@
   </header>
 
   <main class="results-container">
+    <!-- META del contratante -->
+    <section id="quoteMeta" class="quote-meta" aria-label="Datos del contratante"></section>
+
     <div class="results-actions">
       <button class="btn btn--back" onclick="history.back()">Volver</button>
       <button class="btn btn--print" onclick="window.print()">Imprimir</button>
     </div>
+
     <div id="results" class="results-grid" aria-live="polite"></div>
+
+    <!-- Disclaimer -->
+    <section class="disclaimer">
+      <h3>Importante</h3>
+      <ul>
+        <li><strong>Validez de la cotización:</strong> Esta cotización tiene una vigencia de 7 días. No obstante, la aseguradora puede modificar su tarifario durante este período, lo que requerirá una actualización de la propuesta.</li>
+        <li><strong>Valores mensuales:</strong> Los montos mensuales son aproximados y se basan en un financiamiento de 12 cuotas sin intereses, exclusivo para pagos mediante débito automático (obligatorio). La aseguradora podría aplicar intereses o cambiar su política de financiamiento.</li>
+        <li><strong>Edad cotizada:</strong> La edad considerada en la cotización debe coincidir con la edad al momento de presentar la solicitud.</li>
+        <li><strong>Exámenes médicos:</strong> La aseguradora puede requerir exámenes médicos si lo considera necesario.</li>
+      </ul>
+    </section>
   </main>
 
   <script>
     (function () {
       const RAW = sessionStorage.getItem('cotisalud_resultados');
-      const container = document.getElementById('results');
+      const resultsEl = document.getElementById('results');
+      const metaEl = document.getElementById('quoteMeta');
 
       if (!RAW) {
-        container.innerHTML = '<p>No se encontraron resultados. Vuelve al formulario y realiza una cotización.</p>';
+        resultsEl.innerHTML = '<p>No se encontraron resultados. Vuelve al formulario y realiza una cotización.</p>';
         return;
       }
 
+      // Soporta formato {meta, data} y también el legado [array]
+      let parsed = JSON.parse(RAW);
+      let meta = null;
+      let results = [];
+      if (Array.isArray(parsed)) {
+        results = parsed;
+      } else {
+        meta = parsed.meta || null;
+        results = parsed.data || [];
+      }
+
+      // Render META si existe
+      function formatDDMMYYYY(iso) {
+        const d = iso ? new Date(iso) : new Date();
+        const dd = String(d.getDate()).padStart(2,'0');
+        const mm = String(d.getMonth()+1).padStart(2,'0');
+        const yyyy = d.getFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+      }
+
+      if (meta) {
+        metaEl.innerHTML = `
+          <div class="meta-grid">
+            <div><span class="meta-label">Contratante:</span> ${meta.nombre} ${meta.apellidos}</div>
+            <div><span class="meta-label">Correo:</span> ${meta.email}</div>
+            <div><span class="meta-label">Fecha de cotización:</span> ${formatDDMMYYYY(meta.fecha)}</div>
+            <div><span class="meta-label">Broker:</span> ${meta.broker || 'Protexa Corredores de Seguros SAC'}</div>
+          </div>
+        `;
+      } else {
+        metaEl.remove();
+      }
+
       /** @type {Array<{aseguradora:string,plan:string,total_anual:number,total_mensual:number,prima_por_asegurado:Array<{edad:number,prima:number}>}>} */
-      const results = JSON.parse(RAW);
 
       // 1) Agrupar por aseguradora
       const grupos = results.reduce((acc, item) => {
@@ -44,7 +92,7 @@
         .toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
       // 3) Render
-      container.innerHTML = '';
+      resultsEl.innerHTML = '';
       Object.entries(grupos).forEach(([aseguradora, planes]) => {
         planes.sort((a, b) => (b[SORT_KEY] ?? 0) - (a[SORT_KEY] ?? 0));
 
@@ -73,7 +121,7 @@
           col.appendChild(card);
         });
 
-        container.appendChild(col);
+        resultsEl.appendChild(col);
       });
     })();
   </script>
