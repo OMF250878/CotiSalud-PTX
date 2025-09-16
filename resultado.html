@@ -5,6 +5,63 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Resultados de Cotización — Protexa</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Estilos adicionales para el botón de envío de email */
+    .btn--email {
+      background-color: #007bff;
+      color: white;
+      margin-left: 10px;
+    }
+    
+    .btn--email:hover {
+      background-color: #0056b3;
+    }
+    
+    .btn--email:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    .email-status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    
+    .email-status.success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .email-status.error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .email-status.loading {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    
+    .retry-btn {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    
+    .retry-btn:hover {
+      background-color: #c82333;
+    }
+  </style>
 </head>
 <body>
   <header class="site-header site-header--compact">
@@ -18,7 +75,11 @@
     <div class="results-actions">
       <button class="btn btn--back" onclick="history.back()">Volver</button>
       <button class="btn btn--print" onclick="window.print()">Imprimir</button>
+      <button id="emailBtn" class="btn btn--email" onclick="sendEmail()">Enviar email</button>
     </div>
+
+    <!-- Status del envío de email -->
+    <div id="emailStatus" class="email-status" style="display: none;"></div>
 
     <div id="results" class="results-grid" aria-live="polite"></div>
 
@@ -35,6 +96,10 @@
   </main>
 
   <script>
+    let emailRetryCount = 0;
+    const MAX_RETRIES = 3;
+    const WEBHOOK_URL = 'https://primary-production-e1c81.up.railway.app/webhook-test/8690a13d-7871-4513-90af-22c2db337394';
+
     (function () {
       const RAW = sessionStorage.getItem('cotisalud_resultados');
       const resultsEl = document.getElementById('results');
@@ -123,7 +188,109 @@
 
         resultsEl.appendChild(col);
       });
+
+      // Hacer disponible los datos para la función de envío de email
+      window.quotationData = { meta, results };
     })();
+
+    // Función para preparar el JSON según el formato requerido
+    function prepareEmailData() {
+      const { meta, results } = window.quotationData;
+      
+      if (!meta) {
+        throw new Error('No se encontraron los datos del contratante');
+      }
+
+      // Formatear fecha
+      function formatSpanishDate(iso) {
+        const months = [
+          'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+          'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+        ];
+        const d = iso ? new Date(iso) : new Date();
+        const day = d.getDate();
+        const month = months[d.getMonth()];
+        const year = d.getFullYear();
+        return `${day} de ${month} de ${year}`;
+      }
+
+      return {
+        client_name: meta.nombre || '',
+        client_lastname: meta.apellidos || '',
+        client_email: meta.email || '',
+        lista_asegurados: results || [],
+        quote_date: formatSpanishDate(meta.fecha)
+      };
+    }
+
+    // Función para mostrar el estado del envío
+    function showEmailStatus(message, type, showRetry = false) {
+      const statusEl = document.getElementById('emailStatus');
+      statusEl.style.display = 'block';
+      statusEl.className = `email-status ${type}`;
+      
+      let content = message;
+      if (showRetry && emailRetryCount < MAX_RETRIES) {
+        content += `<button class="retry-btn" onclick="sendEmail()">Reintentar (${emailRetryCount}/${MAX_RETRIES})</button>`;
+      }
+      
+      statusEl.innerHTML = content;
+    }
+
+    // Función principal para enviar el email
+    async function sendEmail() {
+      const emailBtn = document.getElementById('emailBtn');
+      
+      try {
+        // Preparar datos
+        const emailData = prepareEmailData();
+        
+        // Mostrar estado de carga
+        emailBtn.disabled = true;
+        emailBtn.textContent = 'Enviando...';
+        showEmailStatus('📧 Enviando cotización por email...', 'loading');
+
+        // Realizar petición al webhook
+        const response = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(emailData)
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
+        }
+
+        // Éxito
+        emailRetryCount = 0;
+        emailBtn.disabled = true; // Mantener deshabilitado después del éxito
+        emailBtn.textContent = '✓ Email enviado';
+        showEmailStatus('✅ ¡Cotización enviada por email exitosamente!', 'success');
+
+      } catch (error) {
+        console.error('Error enviando email:', error);
+        emailRetryCount++;
+        
+        // Restaurar botón
+        emailBtn.disabled = false;
+        emailBtn.textContent = 'Enviar email';
+        
+        if (emailRetryCount < MAX_RETRIES) {
+          showEmailStatus(
+            `❌ Error al enviar email: ${error.message}. Intento ${emailRetryCount}/${MAX_RETRIES}.`,
+            'error',
+            true
+          );
+        } else {
+          showEmailStatus(
+            '❌ Error al enviar email después de varios intentos. Por favor, contacta a soporte técnico.',
+            'error'
+          );
+        }
+      }
+    }
   </script>
 </body>
 </html>
