@@ -1,8 +1,11 @@
 // === Configuración ===
 // Si tienes UPSTREAM_WEBHOOK en el servidor, usa el proxy:
 const USE_PROXY = true;
+
 // Si no usas proxy, pon USE_PROXY = false y usa tu webhook externo aquí:
-const WEBHOOK_URL = 'https://primary-production-e1c81.up.railway.app/webhook/ce2177d6-7da8-44b6-9781-107ad6844bf1';
+// const WEBHOOK_URL = 'https://primary-production-e1c81.up.railway.app/webhook/ce2177d6-7da8-44b6-9781-107ad6844bf1';
+// Nuevo webhook de n8n en VPS
+const WEBHOOK_URL = 'https://n8n.protexa.pe/webhook/ce2177d6-7da8-44b6-9781-107ad6844bf1';
 
 // Estado dinámico
 let hijoCounter = 0; // solo para numerar las tarjetas de hijos
@@ -246,3 +249,4 @@ function removeConyuge(btn){
   addBtn.textContent = '+ Agregar Cónyuge';
 }
 function removeHijo(btn){ btn.closest('.card').remove(); }
+
